@@ -12,7 +12,7 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("智能 AI 面试官平台 API")
+                        .title("智能AI面试平台API")
                         .description("简历分析、模拟面试、知识库管理 RESTful API 文档")
                         .version("1.0.0"));
     }
