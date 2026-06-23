@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Settings, Plus, Trash2, Plug, CheckCircle, XCircle,
@@ -138,6 +139,7 @@ function ConfigRow({ label, value, title, monospace = false, emphasis = false }:
 }
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const [providers, setProviders] = useState<ProviderItem[]>([]);
   const [defaultProviderId, setDefaultProviderId] = useState('');
   const [defaultEmbeddingProviderId, setDefaultEmbeddingProviderId] = useState('');
@@ -227,7 +229,7 @@ export default function SettingsPage() {
       setTtsConfig(tts);
     } catch (err) {
       console.error('Failed to load settings:', err);
-      showToast('加载数据失败', 'error');
+      showToast(t('common.load_failed'), 'error');
     } finally {
       setLoading(false);
     }
@@ -273,16 +275,16 @@ export default function SettingsPage() {
   // --- CRUD handlers ---
   const handleCreate = async () => {
     if (!formId.trim() || !formBaseUrl.trim() || !formApiKey.trim() || !formModel.trim()) {
-      showToast('请填写必填字段', 'error');
+      showToast(t('common.required_field'), 'error');
       return;
     }
     if (formSupportsEmbedding && !formEmbeddingModel.trim()) {
-      showToast('支持向量化时需要填写向量模型，例如 GLM 填 embedding-3', 'error');
+      showToast(t('settings.dimension_hint_toast'), 'error');
       return;
     }
     const embeddingDimensions = parseInt(formEmbeddingDimensions.trim(), 10);
     if (formSupportsEmbedding && (!Number.isFinite(embeddingDimensions) || embeddingDimensions <= 0)) {
-      showToast('向量维度必须为正整数，当前 pgvector 表为 1024 维', 'error');
+      showToast(t('settings.dimension_invalid_toast'), 'error');
       return;
     }
     setSaving(true);
@@ -303,12 +305,12 @@ export default function SettingsPage() {
         if (!isNaN(temp)) data.temperature = temp;
       }
       await llmProviderApi.create(data);
-      showToast('Provider 创建成功');
+      showToast(t('settings.create_success'));
       closeModal();
       await loadData();
     } catch (err) {
       console.error('Failed to create provider:', err);
-      showToast(err instanceof Error ? err.message : '创建失败', 'error');
+      showToast(err instanceof Error ? err.message : t('settings.create_failed'), 'error');
     } finally {
       setSaving(false);
     }
@@ -317,16 +319,16 @@ export default function SettingsPage() {
   const handleUpdate = async () => {
     if (!editingProvider) return;
     if (!formBaseUrl.trim() || !formModel.trim()) {
-      showToast('请填写必填字段', 'error');
+      showToast(t('common.required_field'), 'error');
       return;
     }
     if (formSupportsEmbedding && !formEmbeddingModel.trim()) {
-      showToast('支持向量化时需要填写向量模型，例如 GLM 填 embedding-3', 'error');
+      showToast(t('settings.dimension_hint_toast'), 'error');
       return;
     }
     const embeddingDimensions = parseInt(formEmbeddingDimensions.trim(), 10);
     if (formSupportsEmbedding && (!Number.isFinite(embeddingDimensions) || embeddingDimensions <= 0)) {
-      showToast('向量维度必须为正整数，当前 pgvector 表为 1024 维', 'error');
+      showToast(t('settings.dimension_invalid_toast'), 'error');
       return;
     }
     setSaving(true);
@@ -348,12 +350,12 @@ export default function SettingsPage() {
         if (!isNaN(temp)) data.temperature = temp;
       }
       await llmProviderApi.update(editingProvider.id, data);
-      showToast('Provider 更新成功');
+      showToast(t('settings.update_success'));
       closeModal();
       await loadData();
     } catch (err) {
       console.error('Failed to update provider:', err);
-      showToast(err instanceof Error ? err.message : '更新失败', 'error');
+      showToast(err instanceof Error ? err.message : t('settings.update_failed'), 'error');
     } finally {
       setSaving(false);
     }
@@ -364,12 +366,12 @@ export default function SettingsPage() {
     setDeleting(true);
     try {
       await llmProviderApi.delete(deleteConfirmId);
-      showToast('Provider 已删除');
+      showToast(t('settings.delete_success'));
       setDeleteConfirmId(null);
       await loadData();
     } catch (err) {
       console.error('Failed to delete provider:', err);
-      showToast(err instanceof Error ? err.message : '删除失败', 'error');
+      showToast(err instanceof Error ? err.message : t('settings.delete_failed'), 'error');
     } finally {
       setDeleting(false);
     }
@@ -414,12 +416,12 @@ export default function SettingsPage() {
         defaultProvider: pendingDefaultProviderId,
         defaultEmbeddingProvider: defaultEmbeddingProviderId,
       });
-      showToast(`已将 "${pendingDefaultProviderId}" 设为默认聊天服务`);
+      showToast(t('settings.set_default_chat_success', { id: pendingDefaultProviderId }));
       setPendingDefaultProviderId(null);
       await loadData();
     } catch (err) {
       console.error('Failed to set default:', err);
-      showToast(err instanceof Error ? err.message : '设置默认 Provider 失败', 'error');
+      showToast(err instanceof Error ? err.message : t('settings.set_default_failed'), 'error');
     } finally {
       setSettingDefault(false);
     }
@@ -427,7 +429,7 @@ export default function SettingsPage() {
 
   const handleSetEmbeddingDefault = async (provider: ProviderItem) => {
     if (!provider.supportsEmbedding || !provider.embeddingModel) {
-      showToast('该 Provider 不支持 Embedding，不能作为知识库向量服务', 'error');
+      showToast(t('settings.not_embedding_provider'), 'error');
       return;
     }
     setPendingDefaultEmbeddingProviderId(provider.id);
@@ -443,12 +445,16 @@ export default function SettingsPage() {
         defaultProvider: defaultProviderId,
         defaultEmbeddingProvider: pendingDefaultEmbeddingProviderId,
       });
-      showToast(`已将 "${pendingDefaultEmbeddingProviderId}" 的 ${pendingEmbeddingProvider?.embeddingModel ?? '向量模型'} (${pendingEmbeddingProvider?.embeddingDimensions ?? 1024}维) 设为默认向量服务`);
+      showToast(t('settings.set_default_embedding_success', {
+        id: pendingDefaultEmbeddingProviderId,
+        model: pendingEmbeddingProvider?.embeddingModel ?? '',
+        dim: pendingEmbeddingProvider?.embeddingDimensions ?? 1024,
+      }));
       setPendingDefaultEmbeddingProviderId(null);
       await loadData();
     } catch (err) {
       console.error('Failed to set embedding default:', err);
-      showToast(err instanceof Error ? err.message : '设置默认向量 Provider 失败', 'error');
+      showToast(err instanceof Error ? err.message : t('settings.set_embedding_failed'), 'error');
     } finally {
       setSettingEmbeddingDefault(false);
     }
@@ -498,11 +504,11 @@ export default function SettingsPage() {
     setVoiceSaving(true);
     try {
       await llmProviderApi.updateAsrConfig(asrForm);
-      showToast('ASR 配置已更新');
+      showToast(t('settings.asr_updated'));
       setShowVoiceModal(null);
       await loadData();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : '更新失败', 'error');
+      showToast(err instanceof Error ? err.message : t('settings.update_failed'), 'error');
     } finally {
       setVoiceSaving(false);
     }
@@ -512,11 +518,11 @@ export default function SettingsPage() {
     setVoiceSaving(true);
     try {
       await llmProviderApi.updateTtsConfig(ttsForm);
-      showToast('TTS 配置已更新');
+      showToast(t('settings.tts_updated'));
       setShowVoiceModal(null);
       await loadData();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : '更新失败', 'error');
+      showToast(err instanceof Error ? err.message : t('settings.update_failed'), 'error');
     } finally {
       setVoiceSaving(false);
     }
@@ -549,8 +555,8 @@ export default function SettingsPage() {
             <Settings className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">系统设置</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-0.5 text-sm">管理聊天模型、向量模型和模块配置</p>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{t('settings.title')}</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-0.5 text-sm">{t('settings.subtitle')}</p>
           </div>
         </div>
       </div>
@@ -572,7 +578,7 @@ export default function SettingsPage() {
               {/* Provider header */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-slate-800 dark:text-white">
-                  模型服务
+                  {t('settings.model_services')}
                 </h2>
                 <motion.button
                   onClick={openCreateModal}
@@ -583,7 +589,7 @@ export default function SettingsPage() {
                     hover:from-primary-600 hover:to-primary-700 transition-all"
                 >
                   <Plus className="w-4 h-4" />
-                  新增 Provider
+                  {t('settings.add_provider')}
                 </motion.button>
               </div>
 
@@ -1380,10 +1386,10 @@ export default function SettingsPage() {
 
       <ConfirmDialog
         open={pendingDefaultProviderId !== null}
-        title="设为默认聊天服务"
-        message={`确定要将 "${pendingDefaultProviderId ?? ''}" 设为默认聊天服务吗？该操作不会改变知识库使用的向量模型。`}
-        confirmText="确认设置"
-        cancelText="取消"
+        title={t('settings.set_default_chat_title')}
+        message={t('settings.set_default_chat_message', { id: pendingDefaultProviderId ?? '' })}
+        confirmText={t('settings.confirm_set')}
+        cancelText={t('common.cancel')}
         loading={settingDefault}
         onConfirm={handleConfirmSetDefault}
         onCancel={() => {
@@ -1395,10 +1401,14 @@ export default function SettingsPage() {
 
       <ConfirmDialog
         open={pendingDefaultEmbeddingProviderId !== null}
-        title="设为默认向量服务"
-        message={`确定要将 "${pendingDefaultEmbeddingProviderId ?? ''}" 的向量模型 "${pendingEmbeddingProvider?.embeddingModel ?? ''}"（${pendingEmbeddingProvider?.embeddingDimensions ?? 1024}维）设为知识库默认向量服务吗？后续上传和重新向量化会使用这个向量模型，不会使用聊天模型。`}
-        confirmText="确认设置"
-        cancelText="取消"
+        title={t('settings.set_default_embedding_title')}
+        message={t('settings.set_default_embedding_message', {
+          id: pendingDefaultEmbeddingProviderId ?? '',
+          model: pendingEmbeddingProvider?.embeddingModel ?? '',
+          dims: pendingEmbeddingProvider?.embeddingDimensions ?? 1024,
+        })}
+        confirmText={t('settings.confirm_set')}
+        cancelText={t('common.cancel')}
         loading={settingEmbeddingDefault}
         onConfirm={handleConfirmSetEmbeddingDefault}
         onCancel={() => {

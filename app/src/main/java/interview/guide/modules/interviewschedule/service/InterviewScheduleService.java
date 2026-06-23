@@ -1,5 +1,6 @@
 package interview.guide.modules.interviewschedule.service;
 
+import interview.guide.common.auth.CurrentUser;
 import interview.guide.common.exception.BusinessException;
 import interview.guide.common.exception.ErrorCode;
 import interview.guide.modules.interviewschedule.model.CreateInterviewRequest;
@@ -32,6 +33,7 @@ public class InterviewScheduleService {
         InterviewScheduleEntity entity = new InterviewScheduleEntity();
         BeanUtils.copyProperties(request, entity);
         entity.setStatus(InterviewStatus.PENDING);
+        entity.setUserId(CurrentUser.getUserId());
 
         return toDTO(repository.save(entity));
     }
@@ -56,19 +58,32 @@ public class InterviewScheduleService {
     }
 
     public List<InterviewScheduleDTO> getAll(String status, LocalDateTime start, LocalDateTime end) {
-        List<InterviewScheduleEntity> entities;
-
-        if (start != null && end != null) {
-            entities = repository.findByInterviewTimeBetween(start, end);
-        } else if (status != null) {
-            entities = repository.findByStatus(InterviewStatus.valueOf(status));
-        } else {
-            entities = repository.findAll();
+        Long userId = CurrentUser.getUserId();
+        // 未登录时返回全部（向后兼容）
+        if (userId == null) {
+            List<InterviewScheduleEntity> entities = buildEntityList(status, start, end);
+            return entities.stream().map(this::toDTO).collect(Collectors.toList());
         }
 
+        // 已登录时只返回当前用户的数据
+        List<InterviewScheduleEntity> entities = buildEntityList(status, start, end);
         return entities.stream()
+            .filter(e -> userId.equals(e.getUserId()))
             .map(this::toDTO)
             .collect(Collectors.toList());
+    }
+
+    private List<InterviewScheduleEntity> buildEntityList(String status, LocalDateTime start, LocalDateTime end) {
+        Long userId = CurrentUser.getUserId();
+        if (userId != null) {
+            return repository.findByUserIdOrderByInterviewTimeAsc(userId);
+        }
+        if (start != null && end != null) {
+            return repository.findByInterviewTimeBetween(start, end);
+        } else if (status != null) {
+            return repository.findByStatus(InterviewStatus.valueOf(status));
+        }
+        return repository.findAll();
     }
 
     public InterviewScheduleDTO getById(Long id) {

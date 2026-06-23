@@ -18,6 +18,11 @@ import java.util.Optional;
 public interface InterviewSessionRepository extends JpaRepository<InterviewSessionEntity, Long> {
 
     /**
+     * 获取指定用户的面试记录（按创建时间倒序）
+     */
+    List<InterviewSessionEntity> findByUserIdOrderByCreatedAtDesc(Long userId);
+
+    /**
      * 根据会话ID查找
      */
     Optional<InterviewSessionEntity> findBySessionId(String sessionId);

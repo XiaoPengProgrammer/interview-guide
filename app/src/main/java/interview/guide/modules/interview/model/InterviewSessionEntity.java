@@ -35,6 +35,10 @@ public class InterviewSessionEntity {
     @Column(length = 16)
     private String difficulty = "mid";
 
+    // 用户ID（关联用户，可空以兼容旧数据）
+    @Column(name = "user_id")
+    private Long userId;
+
     // 简历ID（直接映射FK列，避免LAZY加载触发额外查询）
     @Column(name = "resume_id", insertable = false, updatable = false)
     private Long resumeId;
@@ -282,5 +286,13 @@ public class InterviewSessionEntity {
     public void addAnswer(InterviewAnswerEntity answer) {
         answers.add(answer);
         answer.setSession(this);
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

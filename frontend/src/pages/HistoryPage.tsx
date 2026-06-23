@@ -1,5 +1,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import i18next from 'i18next';
 import {AnimatePresence, motion} from 'framer-motion';
 import {AlertCircle, CheckCircle, Clock, FileStack, RefreshCw, Sparkles, Upload} from 'lucide-react';
 import {historyApi, ResumeListItem} from '../api/history';
@@ -24,11 +26,11 @@ function AnalyzeStatusIcon({status}: { status?: string }) {
 }
 
 function getAnalyzeStatusText(status?: string): string {
-  if (status === 'FAILED') return '分析失败';
-  if (status === 'PROCESSING') return '分析中';
-  if (status === 'PENDING') return '等待分析';
-  if (status === 'COMPLETED') return '分析完成';
-  return '待分析';
+  if (status === 'FAILED') return i18next.t('resume.analyze_failed');
+  if (status === 'PROCESSING') return i18next.t('resume.analyze_processing');
+  if (status === 'PENDING') return i18next.t('resume.analyze_pending');
+  if (status === 'COMPLETED') return i18next.t('resume.analyze_completed');
+  return i18next.t('resume.analyze_waiting');
 }
 
 function resumesEqual(a: ResumeListItem[], b: ResumeListItem[]): boolean {
@@ -42,6 +44,7 @@ function resumesEqual(a: ResumeListItem[], b: ResumeListItem[]): boolean {
 }
 
 export default function HistoryList({onSelectResume}: HistoryListProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [resumes, setResumes] = useState<ResumeListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +61,7 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
         return data;
       });
     } catch (err) {
-      console.error('加载历史记录失败', err);
+      console.error(t('resume.load_failed'), err);
     } finally {
       if (!isPolling) setLoading(false);
     }
@@ -92,7 +95,7 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
       await loadResumes();
       setDeleteConfirm(null);
     } catch (err) {
-      alert(err instanceof Error ? err.message : '删除失败，请稍后重试');
+      alert(err instanceof Error ? err.message : t('resume.delete_failed'));
     } finally {
       setDeletingId(null);
     }
@@ -113,9 +116,9 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
         <div>
           <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
             <FileStack className="w-7 h-7 text-primary-500" />
-            简历管理
+            {t('resume.title')}
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">管理您的简历，AI 智能分析与评分</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">{t('resume.subtitle')}</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -123,14 +126,14 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
             className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
           >
             <Upload className="w-4 h-4" />
-            上传简历
+            {t('resume.upload')}
           </button>
           <button
             onClick={() => navigate('/interview-hub')}
             className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
             <Sparkles className="w-4 h-4" />
-            模拟面试
+            {t('resume.mock_interview')}
           </button>
         </div>
       </div>
@@ -144,7 +147,7 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
           </svg>
           <input
             type="text"
-            placeholder="搜索简历..."
+            placeholder={t('resume.search_placeholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1 outline-none text-slate-700 dark:text-slate-200 placeholder:text-slate-400 bg-transparent"
@@ -160,7 +163,7 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
             animate={{rotate: 360}}
             transition={{duration: 1, repeat: Infinity, ease: "linear"}}
           />
-          <p className="text-slate-500 dark:text-slate-400">加载中...</p>
+          <p className="text-slate-500 dark:text-slate-400">{t('common.loading')}</p>
         </div>
       )}
 
@@ -172,8 +175,8 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
           animate={{opacity: 1, scale: 1}}
         >
           <div className="text-6xl mb-6">📄</div>
-          <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">暂无简历记录</h3>
-          <p className="text-slate-500 dark:text-slate-400">上传简历开始您的第一次 AI 面试分析</p>
+          <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('resume.no_resumes')}</h3>
+          <p className="text-slate-500 dark:text-slate-400">{t('resume.subtitle')}</p>
         </motion.div>
       )}
 
@@ -188,11 +191,11 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
           <table className="w-full">
             <thead>
             <tr className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-600">
-              <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">简历名称</th>
-              <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">上传日期</th>
-              <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">分析状态</th>
-              <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">AI 评分</th>
-              <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">面试状态</th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('resume.resume_name')}</th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('resume.upload_time')}</th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('resume.analyze_status_header')}</th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('resume.ai_score_header')}</th>
+              <th className="text-left px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{t('resume.interview_status_header')}</th>
               <th className="w-20"></th>
             </tr>
             </thead>
@@ -246,12 +249,12 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
                         <span className="font-bold text-slate-800 dark:text-white">{resume.latestScore}</span>
                       </div>
                     ) : isAnalyzing(resume.analyzeStatus) ? (
-                      <span className="text-blue-500 dark:text-blue-400 text-sm">生成中...</span>
+                      <span className="text-blue-500 dark:text-blue-400 text-sm">{t('resume.generating')}</span>
                     ) : resume.analyzeStatus === 'FAILED' ? (
                       <span className="text-red-500 dark:text-red-400 text-sm"
-                            title={resume.analyzeError}>失败</span>
+                            title={resume.analyzeError}>{t('resume.failed')}</span>
                     ) : (
-                      <span className="text-slate-400 dark:text-slate-500">-</span>
+                      <span className="text-slate-400 dark:text-slate-500">{t('resume.score_placeholder')}</span>
                     )}
                   </td>
                   <td className="px-6 py-5">
@@ -263,11 +266,11 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
                           <polyline points="9,12 11,14 15,10" stroke="currentColor" strokeWidth="2"
                                     strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
-                        已完成
+                        {t('resume.interview_completed')}
                       </span>
                     ) : (
                       <span
-                        className="inline-flex px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 rounded-full text-sm">待面试</span>
+                        className="inline-flex px-3 py-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 rounded-full text-sm">{t('resume.interview_pending')}</span>
                     )}
                   </td>
                   <td className="px-4">
@@ -276,7 +279,7 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
                         onClick={(e) => handleDeleteClick(resume.id, resume.filename, e)}
                         disabled={deletingId === resume.id}
                         className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="删除简历"
+                        title={t('resume.delete_title')}
                       >
                         {deletingId === resume.id ? (
                           <motion.div
@@ -314,20 +317,20 @@ export default function HistoryList({onSelectResume}: HistoryListProps) {
       <DeleteConfirmDialog
         open={deleteConfirm !== null}
         item={deleteConfirm}
-        itemType="简历"
+        itemType={t('resume.title')}
         loading={deletingId !== null}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteConfirm(null)}
         customMessage={
           deleteConfirm ? (
             <>
-              <p className="mb-2">确定要删除简历 <strong>"{deleteConfirm.filename}"</strong> 吗？</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">删除后将同时删除：</p>
+              <p className="mb-2">{t('resume.delete_confirm_message', {filename: deleteConfirm.filename})}</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">{t('resume.delete_will_remove')}</p>
               <ul className="text-sm text-slate-500 dark:text-red-400 list-disc list-inside mb-2">
-                <li>简历评价记录</li>
-                <li>所有模拟面试记录</li>
+                <li>{t('resume.delete_evaluation_records')}</li>
+                <li>{t('resume.delete_interview_records')}</li>
               </ul>
-              <p className="text-sm font-semibold text-red-600">此操作不可恢复！</p>
+              <p className="text-sm font-semibold text-red-600">{t('resume.delete_irreversible')}</p>
             </>
           ) : undefined
         }

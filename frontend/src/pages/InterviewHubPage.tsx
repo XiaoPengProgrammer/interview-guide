@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ChevronDown, ChevronUp, FileStack, FileText, Loader2, Mic,
@@ -32,6 +33,7 @@ interface RecentInterviewItem {
 }
 
 export default function InterviewHubPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const config = useInterviewConfig({ autoLoad: false });
@@ -61,7 +63,7 @@ export default function InterviewHubPage() {
         ...voiceSessions.map(s => ({
           id: `voice-${s.sessionId}`,
           type: 'voice' as const,
-          title: s.roleType || '语音面试',
+          title: s.roleType || t('interview.voice_interview'),
           status: s.status,
           overallScore: null,
           createdAt: s.createdAt,
@@ -90,7 +92,7 @@ export default function InterviewHubPage() {
 
   const handleStart = () => {
     const selectedSkill = config.selectedSkill;
-    const skillName = selectedSkill?.name || '自定义';
+    const skillName = selectedSkill?.name || t('interview.custom_jd');
 
     if (config.isCustomStartDisabled) {
       return;
@@ -136,9 +138,9 @@ export default function InterviewHubPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
           <Sparkles className="w-7 h-7 text-primary-500" />
-          模拟面试
+          {t('interview.title')}
         </h1>
-        <p className="text-slate-500 dark:text-slate-400 mt-1">选择面试模式和方向，快速开始练习</p>
+        <p className="text-slate-500 dark:text-slate-400 mt-1">{t('interview.start_interview_subtitle')}</p>
       </div>
 
       {/* 配置区域 */}
@@ -147,22 +149,22 @@ export default function InterviewHubPage() {
           {/* 面试模式 */}
           <div>
             <label className="flex items-center gap-2 mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
-              面试模式
+              {t('interview.mode')}
             </label>
             <div className="grid grid-cols-2 gap-3">
               {([
                 {
                   value: 'text' as InterviewMode,
-                  label: '文字面试',
+                  label: t('interview.mode_text'),
                   icon: FileText,
-                  desc: '推荐：更稳定，更适合系统化刷题与复盘',
+                  desc: t('interview.mode_text_desc'),
                   recommended: true,
                 },
                 {
                   value: 'voice' as InterviewMode,
-                  label: '语音面试',
+                  label: t('interview.mode_voice'),
                   icon: Mic,
-                  desc: '实时语音对话，更偏临场模拟',
+                  desc: t('interview.mode_voice_desc'),
                   recommended: false,
                 },
               ]).map(opt => {
@@ -184,7 +186,7 @@ export default function InterviewHubPage() {
                         <span>{opt.label}</span>
                         {opt.recommended && (
                           <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
-                            推荐
+                            {t('interview.recommended')}
                           </span>
                         )}
                       </p>
@@ -199,12 +201,12 @@ export default function InterviewHubPage() {
           {/* 面试方向 */}
           <div>
             <label className="flex items-center gap-2 mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
-              面试方向
+              {t('interview.direction')}
             </label>
             {config.loadingSkills ? (
               <div className="flex items-center gap-2 py-4 text-slate-400">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm">加载中...</span>
+                <span className="text-sm">{t('common.loading')}</span>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
@@ -258,7 +260,7 @@ export default function InterviewHubPage() {
                     })()}
                   </div>
                   <span className={`text-xs font-medium ${config.isCustomSkill ? 'text-primary-700 dark:text-primary-300' : 'text-slate-500 dark:text-slate-400'}`}>
-                    自定义 JD
+                    {t('interview.custom_jd')}
                   </span>
                 </button>
               </div>
@@ -278,7 +280,7 @@ export default function InterviewHubPage() {
                   <textarea
                     value={config.customJdText}
                     onChange={e => config.setCustomJdText(e.target.value)}
-                    placeholder="粘贴目标岗位的职位描述（JD），至少 50 字..."
+                    placeholder={t('interview.jd_placeholder')}
                     rows={4}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700
                       bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white
@@ -293,7 +295,7 @@ export default function InterviewHubPage() {
                       disabled:cursor-not-allowed transition-colors"
                   >
                     {config.parsingJd ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                    解析面试方向
+                    {t('interview.parse_direction')}
                   </button>
                   {config.customCategories.length > 0 && (
                     <div className="flex flex-wrap gap-2">
@@ -310,7 +312,7 @@ export default function InterviewHubPage() {
                   )}
                   {config.jdNeedsReparse && (
                     <p className="text-xs text-amber-600 dark:text-amber-400">
-                      JD 已修改，请重新解析后再开始面试。
+                      {t('interview.jd_needs_reparse')}
                     </p>
                   )}
                 </div>
@@ -321,7 +323,7 @@ export default function InterviewHubPage() {
           {/* 难度 */}
           <div>
             <label className="flex items-center gap-2 mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
-              难度
+              {t('interview.difficulty')}
             </label>
             <div className="grid grid-cols-3 gap-3">
               {DIFFICULTY_OPTIONS.map(opt => {
@@ -337,9 +339,9 @@ export default function InterviewHubPage() {
                       }`}
                   >
                     <p className={`text-sm font-semibold ${selected ? 'text-primary-700 dark:text-primary-300' : 'text-slate-700 dark:text-slate-300'}`}>
-                      {opt.label}
+                      {t(`interview.difficulty_${opt.value}`)}
                     </p>
-                    <p className="text-xs text-slate-400">{opt.desc}</p>
+                    <p className="text-xs text-slate-400">{t(`interview.difficulty_${opt.value}_desc`)}</p>
                   </button>
                 );
               })}
@@ -352,7 +354,7 @@ export default function InterviewHubPage() {
             className="w-full flex items-center gap-2 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
           >
             {config.showMore ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            <span>更多选项</span>
+            <span>{t('interview.more_options')}</span>
             <div className="flex-1 border-t border-slate-200 dark:border-slate-700" />
           </button>
 
@@ -369,7 +371,7 @@ export default function InterviewHubPage() {
                   <div className="flex items-center gap-3 mb-3">
                     <FileStack className="w-5 h-5 text-primary-500" />
                     <p className="font-semibold text-sm text-primary-900 dark:text-primary-100">
-                      基于简历面试（可选）
+                      {t('interview.resume_based_hint')}
                     </p>
                   </div>
                   <select
@@ -379,7 +381,7 @@ export default function InterviewHubPage() {
                       bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white
                       focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-shadow"
                   >
-                    <option value="">不使用简历（通用提问）</option>
+                    <option value="">{t('interview.no_resume_option')}</option>
                     {config.resumes.map(r => (
                       <option key={r.id} value={r.id}>{r.filename}</option>
                     ))}
@@ -390,7 +392,7 @@ export default function InterviewHubPage() {
                 {config.mode === 'text' && (
                   <div>
                     <label className="flex items-center gap-2 mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                      题目数量
+                      {t('interview.question_count')}
                     </label>
                     <div className="flex gap-2">
                       {[6, 8, 10, 12].map(n => (
@@ -403,7 +405,7 @@ export default function InterviewHubPage() {
                               : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                             }`}
                         >
-                          {n} 题
+                          {t('interview.number_questions', {n})}
                         </button>
                       ))}
                     </div>
@@ -414,7 +416,7 @@ export default function InterviewHubPage() {
                 {config.mode === 'voice' && (
                   <div className="bg-slate-50/80 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
                     <div className="flex items-center justify-between mb-3">
-                      <p className="font-semibold text-sm text-slate-900 dark:text-white">计划面试时长</p>
+                      <p className="font-semibold text-sm text-slate-900 dark:text-white">{t('interview.plan_duration')}</p>
                       <div className="text-2xl font-bold tabular-nums text-primary-600 dark:text-primary-400">
                         {config.plannedDuration}
                         <span className="text-xs font-normal text-slate-400 ml-0.5">min</span>
@@ -451,7 +453,7 @@ export default function InterviewHubPage() {
               bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700
               text-white shadow-lg shadow-primary-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            开始{config.mode === 'text' ? '文字' : '语音'}面试
+            {config.mode === 'text' ? t('interview.start_text_interview') : t('interview.start_voice_interview')}
           </motion.button>
         </div>
       </div>
@@ -459,12 +461,12 @@ export default function InterviewHubPage() {
       {/* 最近面试记录 */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-slate-800 dark:text-white">最近面试记录</h2>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white">{t('interview.recent_records')}</h2>
           <Link
             to="/interviews"
             className="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors"
           >
-            查看全部
+            {t('interview.view_all')}
           </Link>
         </div>
 
@@ -474,7 +476,7 @@ export default function InterviewHubPage() {
           </div>
         ) : recentInterviews.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-slate-400 dark:text-slate-500 text-sm">暂无面试记录，选择方向开始第一次面试吧</p>
+            <p className="text-slate-400 dark:text-slate-500 text-sm">{t('interview.empty_recent')}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -514,7 +516,7 @@ export default function InterviewHubPage() {
                           ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
                           : 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
                       }`}>
-                        {item.type === 'text' ? '文字' : '语音'}
+                        {item.type === 'text' ? t('interview.text_badge') : t('interview.voice_badge')}
                       </span>
                     </div>
                     <div className="flex items-center gap-3 mt-1">
@@ -523,12 +525,12 @@ export default function InterviewHubPage() {
                       </span>
                       {isEvaluating && (
                         <span className="flex items-center gap-1 text-xs text-blue-500">
-                          <RefreshCw className="w-3 h-3 animate-spin" /> 评估中
+                          <RefreshCw className="w-3 h-3 animate-spin" /> {t('interview.evaluating')}
                         </span>
                       )}
                       {isCompleted && item.overallScore !== null && (
                         <span className="text-xs text-slate-600 dark:text-slate-300">
-                          得分 <span className={`font-bold ${getScoreTextColor(item.overallScore!)}`}>{item.overallScore}</span>
+                          {t('interview.score_label')} <span className={`font-bold ${getScoreTextColor(item.overallScore!)}`}>{item.overallScore}</span>
                         </span>
                       )}
                     </div>

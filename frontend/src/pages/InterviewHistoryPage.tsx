@@ -135,7 +135,7 @@ function StatCard({
 function TypeBadge({ type }: { type: 'text' | 'voice' }) {
   if (type === 'voice') {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full text-xs font-medium">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 rounded-full text-xs font-medium">
         <Mic className="w-3 h-3" />
         语音
       </span>
@@ -405,7 +405,7 @@ export default function InterviewHistoryPage({ onBack: _onBack, onViewInterview,
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard icon={Users} label="面试总数" value={stats.totalCount} color="bg-primary-500" />
           <StatCard icon={CheckCircle} label="已完成" value={stats.completedCount} color="bg-emerald-500" />
-          <StatCard icon={TrendingUp} label="平均分数" value={stats.averageScore} suffix="分" color="bg-indigo-500" />
+          <StatCard icon={TrendingUp} label="平均分数" value={stats.averageScore} suffix="分" color="bg-primary-500" />
         </div>
       )}
 
@@ -489,7 +489,7 @@ export default function InterviewHistoryPage({ onBack: _onBack, onViewInterview,
                         {item.type === 'text' ? (
                           <FileText className="w-5 h-5 text-slate-400" />
                         ) : (
-                          <Mic className="w-5 h-5 text-purple-400" />
+                          <Mic className="w-5 h-5 text-primary-400" />
                         )}
                         <div>
                           <p className="font-medium text-slate-800 dark:text-white">{item.title}</p>

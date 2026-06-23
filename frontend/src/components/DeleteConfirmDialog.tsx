@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import ConfirmDialog from './ConfirmDialog';
 
 export interface DeleteItem {
@@ -11,17 +12,13 @@ export interface DeleteItem {
 export interface DeleteConfirmDialogProps {
   open: boolean;
   item: DeleteItem | null;
-  itemType: string; // 如 "知识库"、"对话"、"简历"、"面试记录"
+  itemType: string;
   loading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
-  customMessage?: React.ReactNode; // 可选的自定义消息内容
+  customMessage?: React.ReactNode;
 }
 
-/**
- * 通用的删除确认对话框组件
- * 简化删除确认对话框的使用
- */
 export default function DeleteConfirmDialog({
   open,
   item,
@@ -31,24 +28,24 @@ export default function DeleteConfirmDialog({
   onCancel,
   customMessage,
 }: DeleteConfirmDialogProps) {
-  // 获取项目名称（支持 name、title、filename、sessionId 等字段）
+  const { t } = useTranslation();
+
   const getItemName = () => {
     if (!item) return '';
     return item.name || item.title || item.filename || item.sessionId || (item.id ? `ID: ${item.id}` : '');
   };
 
-  // 生成默认消息
   const defaultMessage = item
-    ? `确定要删除${itemType}"${getItemName()}"吗？删除后无法恢复。`
+    ? t('common.confirm_delete_message', { itemType, itemName: getItemName() })
     : '';
 
   return (
     <ConfirmDialog
       open={open}
-      title={`删除${itemType}`}
+      title={t('common.confirm_delete_dialog_title', { itemType })}
       message={customMessage || defaultMessage}
-      confirmText="确定删除"
-      cancelText="取消"
+      confirmText={t('common.confirm_delete')}
+      cancelText={t('common.cancel')}
       confirmVariant="danger"
       loading={loading}
       onConfirm={onConfirm}

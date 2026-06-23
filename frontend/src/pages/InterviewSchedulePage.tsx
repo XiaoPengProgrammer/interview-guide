@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { View } from 'react-big-calendar';
 import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
 import { useInterviewSchedule } from '../hooks/useInterviewSchedule';
 import { ScheduleHeader } from '../components/interviewschedule/ScheduleHeader';
 import { ScheduleCalendar } from '../components/interviewschedule/ScheduleCalendar';
@@ -13,6 +14,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import type { InterviewSchedule, InterviewFormData, InterviewStatus } from '../types/interviewSchedule';
 
 export const InterviewSchedulePage: React.FC = () => {
+  const { t } = useTranslation();
   const {
     interviews,
     loading,
@@ -80,7 +82,7 @@ export const InterviewSchedulePage: React.FC = () => {
         });
       } catch (error) {
         console.error('Failed to update interview time:', error);
-        alert('更新面试时间失败，请重试');
+        alert(t('schedule.update_time_failed'));
       }
     }
   }, [interviews, updateInterview]);
@@ -103,7 +105,7 @@ export const InterviewSchedulePage: React.FC = () => {
         });
       } catch (error) {
         console.error('Failed to update interview duration:', error);
-        alert('更新面试时长失败，请重试');
+        alert(t('schedule.update_duration_failed'));
       }
     }
   }, [interviews, updateInterview]);
@@ -211,16 +213,16 @@ export const InterviewSchedulePage: React.FC = () => {
 
       <ConfirmDialog
         open={isConfirmOpen}
-        title="确认调整面试时间"
-        message={`您调整了 ${pendingChanges.size} 个面试的时间,确认保存吗?`}
+        title={t('schedule.confirm_adjust_title')}
+        message={t('schedule.confirm_adjust_message', { size: pendingChanges.size })}
         onConfirm={handleConfirmChanges}
         onCancel={handleCancelChanges}
       />
 
       <ConfirmDialog
         open={isDeleteConfirmOpen}
-        title="确认删除"
-        message="确定要删除这个面试吗?此操作无法撤销。"
+        title={t('schedule.confirm_delete_title')}
+        message={t('schedule.confirm_delete_message')}
         onConfirm={handleConfirmDelete}
         onCancel={() => {
           setIsDeleteConfirmOpen(false);

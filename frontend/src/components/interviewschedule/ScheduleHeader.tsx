@@ -137,7 +137,7 @@ export const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
             className="px-5 py-2.5 bg-gradient-to-r from-primary-600 to-primary-500 dark:from-primary-500 dark:to-primary-400 text-white rounded-xl font-medium shadow-lg shadow-primary-500/20 hover:shadow-xl hover:shadow-primary-500/30 hover:-translate-y-0.5 flex items-center gap-2 transition-all"
           >
             <Plus className="w-4 h-4" />
-            添加面试
+            邀约面试
           </motion.button>
         </div>
       </div>

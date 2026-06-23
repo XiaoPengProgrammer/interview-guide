@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import i18next from 'i18next';
 import { skillApi, type SkillDTO, type CategoryDTO } from '../api/skill';
 import { historyApi, type ResumeListItem } from '../api/history';
 import { getSkillIcon } from '../utils/skillIcons';
@@ -90,7 +91,7 @@ export function useInterviewConfig(options?: {
 
   const handleParseJd = async () => {
     if (!customJdText || customJdText.length < MIN_JD_LENGTH) {
-      alert(`JD 内容太少（至少 ${MIN_JD_LENGTH} 字），请补充后重试`);
+      alert(i18next.t('interview.jd_too_short', { min: MIN_JD_LENGTH }));
       return;
     }
     setParsingJd(true);
@@ -99,7 +100,7 @@ export function useInterviewConfig(options?: {
       setCustomCategories(categories);
       setParsedCustomJdText(customJdText);
     } catch {
-      alert('JD 解析失败，请重试或选择预设主题');
+      alert(i18next.t('interview.jd_parse_failed'));
     } finally {
       setParsingJd(false);
     }

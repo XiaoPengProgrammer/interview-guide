@@ -13,6 +13,8 @@ import java.util.List;
 
 @Repository
 public interface InterviewScheduleRepository extends JpaRepository<InterviewScheduleEntity, Long> {
+    List<InterviewScheduleEntity> findByUserIdOrderByInterviewTimeAsc(Long userId);
+
     List<InterviewScheduleEntity> findByStatusAndInterviewTimeBefore(InterviewStatus status, LocalDateTime time);
 
     List<InterviewScheduleEntity> findByStatus(InterviewStatus status);

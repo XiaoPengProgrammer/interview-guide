@@ -1,4 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import i18next from 'i18next';
 import {AnimatePresence, motion} from 'framer-motion';
 import {
   AlertCircle,
@@ -69,15 +71,15 @@ function StatusIcon({ status }: { status: VectorStatus }) {
 function getStatusText(status: VectorStatus): string {
   switch (status) {
     case 'COMPLETED':
-      return '已完成';
+      return i18next.t('knowledgebase.status_completed');
     case 'PROCESSING':
-      return '处理中';
+      return i18next.t('knowledgebase.status_processing');
     case 'PENDING':
-      return '待处理';
+      return i18next.t('knowledgebase.status_pending');
     case 'FAILED':
-      return '失败';
+      return i18next.t('knowledgebase.status_failed');
     default:
-      return '未知';
+      return i18next.t('knowledgebase.status_unknown');
   }
 }
 
@@ -113,6 +115,7 @@ function StatCard({
 }
 
 export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeBaseManagePageProps) {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<KnowledgeBaseStats | null>(null);
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBaseItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -293,9 +296,9 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
         <div>
             <h1 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
             <Database className="w-7 h-7 text-primary-500" />
-            知识库管理
+            {t('knowledgebase.manage')}
           </h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">管理您的知识库文件，查看使用统计</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">{t('knowledgebase.subtitle')}</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -303,14 +306,14 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
             className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
           >
             <Upload className="w-4 h-4" />
-            上传知识库
+            {t('knowledgebase.upload_knowledge')}
           </button>
           <button
             onClick={onChat}
             className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
           >
             <MessageSquare className="w-4 h-4" />
-            问答助手
+            {t('knowledgebase.qa_assistant')}
           </button>
         </div>
       </div>
@@ -319,19 +322,19 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard
             icon={Database}
-            label="知识库总数"
+            label={t('knowledgebase.stats_total')}
             value={stats.totalCount}
             color="bg-primary-500"
           />
           <StatCard
             icon={MessageSquare}
-            label="总提问次数"
+            label={t('knowledgebase.stats_queries')}
             value={stats.totalQuestionCount}
-            color="bg-indigo-500"
+            color="bg-primary-500"
           />
           <StatCard
             icon={Eye}
-            label="总访问次数"
+            label={t('knowledgebase.stats_visits')}
             value={stats.totalAccessCount}
             color="bg-emerald-500"
           />
@@ -350,7 +353,7 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
                 type="text"
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder="搜索知识库名称..."
+                placeholder={t('knowledgebase.search_placeholder')}
                 className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
               />
             </div>
@@ -367,10 +370,10 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
               }}
               className="appearance-none pl-4 pr-10 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white cursor-pointer"
             >
-              <option value="time">按时间排序</option>
-              <option value="size">按大小排序</option>
-              <option value="access">按访问排序</option>
-              <option value="question">按提问排序</option>
+              <option value="time">{t('knowledgebase.sort_time')}</option>
+              <option value="size">{t('knowledgebase.sort_size')}</option>
+              <option value="access">{t('knowledgebase.sort_visits')}</option>
+              <option value="question">{t('knowledgebase.sort_queries')}</option>
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
           </div>
@@ -385,7 +388,7 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
               }}
               className="appearance-none pl-4 pr-10 py-2 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white cursor-pointer"
             >
-              <option value="">全部分类</option>
+              <option value="">{t('knowledgebase.all_categories')}</option>
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
@@ -407,12 +410,12 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
         ) : knowledgeBases.length === 0 ? (
           <div className="text-center py-20">
             <HardDrive className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500 dark:text-slate-400">暂无知识库</p>
+              <p className="text-slate-500 dark:text-slate-400">{t('knowledgebase.no_documents')}</p>
             <button
               onClick={onUpload}
               className="mt-4 text-primary-500 hover:text-primary-600"
             >
-              上传第一个知识库
+              {t('knowledgebase.upload_first')}
             </button>
           </div>
         ) : (
@@ -420,25 +423,25 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
               <thead className="bg-slate-50 dark:bg-slate-700 border-b border-slate-100 dark:border-slate-600">
               <tr>
                   <th className="text-left px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  名称
+                  {t('knowledgebase.name_header')}
                 </th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  分类
+                  {t('knowledgebase.category_header')}
                 </th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  大小
+                  {t('knowledgebase.size_header')}
                 </th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  状态
+                  {t('knowledgebase.status')}
                 </th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  提问
+                  {t('knowledgebase.queries_header')}
                 </th>
                   <th className="text-left px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  上传时间
+                  {t('knowledgebase.upload_time')}
                 </th>
                   <th className="text-right px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  操作
+                  {t('knowledgebase.actions_header')}
                 </th>
               </tr>
             </thead>
@@ -476,7 +479,7 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
                             value={editingCategoryValue}
                             onChange={(e) => setEditingCategoryValue(e.target.value)}
                             onKeyDown={(e) => handleCategoryKeyDown(e, kb.id)}
-                            placeholder="输入分类名称"
+                            placeholder={t('knowledgebase.category_placeholder')}
                             list="category-suggestions"
                             className="w-24 px-2 py-1 text-sm border border-primary-300 dark:border-primary-600 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                             disabled={savingCategory}
@@ -490,7 +493,7 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
                             onClick={() => handleSaveCategory(kb.id)}
                             disabled={savingCategory}
                             className="p-1 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors disabled:opacity-50"
-                            title="保存"
+                            title={t('common.save')}
                           >
                             {savingCategory ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -502,7 +505,7 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
                             onClick={handleCancelEditCategory}
                             disabled={savingCategory}
                             className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600 rounded transition-colors disabled:opacity-50"
-                            title="取消"
+                            title={t('common.cancel')}
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -521,12 +524,12 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
                               {kb.category}
                             </span>
                           ) : (
-                              <span className="text-slate-400 dark:text-slate-500 text-sm">未分类</span>
+                              <span className="text-slate-400 dark:text-slate-500 text-sm">{t('knowledgebase.uncategorized')}</span>
                           )}
                           <button
                             onClick={() => handleStartEditCategory(kb)}
                             className="p-1 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded opacity-0 group-hover/category:opacity-100 transition-all"
-                            title="编辑分类"
+                            title={t('knowledgebase.edit_category')}
                           >
                             <Edit3 className="w-3.5 h-3.5" />
                           </button>
@@ -557,7 +560,7 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
                       <button
                         onClick={() => handleDownload(kb)}
                         className="p-2 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors"
-                        title="下载"
+                        title={t('knowledgebase.download')}
                       >
                         <Download className="w-4 h-4" />
                       </button>
@@ -567,7 +570,7 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
                           onClick={() => handleRevectorize(kb.id)}
                           disabled={revectorizing === kb.id}
                           className="p-2 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-lg transition-colors disabled:opacity-50"
-                          title="重新向量化"
+                          title={t('knowledgebase.re_vectorize')}
                         >
                           <RefreshCw className={`w-4 h-4 ${revectorizing === kb.id ? 'animate-spin' : ''}`} />
                         </button>
@@ -576,7 +579,7 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
                       <button
                         onClick={() => setDeleteItem(kb)}
                         className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                        title="删除"
+                        title={t('common.delete')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -593,7 +596,7 @@ export default function KnowledgeBaseManagePage({ onUpload, onChat }: KnowledgeB
       <DeleteConfirmDialog
         open={deleteItem !== null}
         item={deleteItem}
-        itemType="知识库"
+        itemType={t('knowledgebase.item_type')}
         loading={deleting}
         onConfirm={handleDelete}
         onCancel={() => setDeleteItem(null)}

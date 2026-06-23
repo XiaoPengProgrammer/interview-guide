@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "resumes", indexes = {
-    @Index(name = "idx_resume_hash", columnList = "fileHash", unique = true)
+    @Index(name = "idx_resume_hash", columnList = "fileHash")
 })
 public class ResumeEntity {
     
@@ -19,8 +19,8 @@ public class ResumeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    // 文件内容的SHA-256哈希值，用于去重
-    @Column(nullable = false, unique = true, length = 64)
+    // 文件内容的SHA-256哈希值，用于标记版本
+    @Column(nullable = false, length = 64)
     private String fileHash;
     
     // 原始文件名
@@ -55,6 +55,10 @@ public class ResumeEntity {
     // 访问次数
     private Integer accessCount = 0;
 
+    // 用户ID（关联用户，可空以兼容旧数据）
+    @Column(name = "user_id")
+    private Long userId;
+    
     // 分析状态（新上传时为 PENDING，异步分析完成后变为 COMPLETED）
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
@@ -179,5 +183,13 @@ public class ResumeEntity {
 
     public void setAnalyzeError(String analyzeError) {
         this.analyzeError = analyzeError;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

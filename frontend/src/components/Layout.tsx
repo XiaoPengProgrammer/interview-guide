@@ -1,9 +1,12 @@
 import {Link, Outlet, useLocation, useNavigate} from 'react-router-dom';
 import {motion} from 'framer-motion';
-import {Calendar, ChevronRight, Database, FileStack, MessageSquare, Moon, Settings, Sparkles, Sun, Users,} from 'lucide-react';
+import {Calendar, ChevronRight, Database, FileStack, LogOut, MessageSquare, Moon, Settings, Sparkles, Sun, User, Users,} from 'lucide-react';
 import {useTheme} from '../hooks/useTheme';
+import {useTranslation} from 'react-i18next';
 import {useState} from 'react';
 import UnifiedInterviewModal, {UnifiedInterviewConfig} from './UnifiedInterviewModal';
+import LanguageSwitcher from './LanguageSwitcher';
+import {tokenManager} from '../api/auth';
 
 interface NavItem {
   id: string;
@@ -23,6 +26,7 @@ export default function Layout() {
   const location = useLocation();
   const currentPath = location.pathname;
   const {theme, toggleTheme} = useTheme();
+  const {t} = useTranslation();
   const navigate = useNavigate();
   const [interviewModalPreset, setInterviewModalPreset] = useState<{
     defaultMode: 'text' | 'voice';
@@ -36,9 +40,9 @@ export default function Layout() {
     setInterviewModalPreset({
       defaultMode: 'text',
       defaultResumeId: resumeId,
-      title: '开始模拟面试',
-      subtitle: '配置面试参数，开始练习',
-      startButtonText: '开始面试',
+      title: t('interview.start_interview_title'),
+      subtitle: t('interview.start_interview_subtitle'),
+      startButtonText: t('interview.start_interview'),
     });
   };
 
@@ -83,27 +87,27 @@ export default function Layout() {
   const navGroups: NavGroup[] = [
     {
       id: 'interview',
-      title: '面试准备',
+      title: t('nav.group_interview'),
       items: [
-        { id: 'resumes', path: '/history', label: '简历管理', icon: FileStack, description: '管理简历，AI 分析' },
-        { id: 'interview-hub', path: '/interview-hub', label: '模拟面试', icon: Sparkles, description: '文字/语音面试练习' },
-        { id: 'interviews', path: '/interviews', label: '面试记录', icon: Users, description: '查看面试历史' },
-        { id: 'interview-schedule', path: '/interview-schedule', label: '面试日程', icon: Calendar, description: '管理面试安排' },
+        { id: 'resumes', path: '/history', label: t('nav.resumes'), icon: FileStack, description: t('nav.resumes_desc') },
+        { id: 'interview-hub', path: '/interview-hub', label: t('nav.interview_hub'), icon: Sparkles, description: t('nav.interview_hub_desc') },
+        { id: 'interviews', path: '/interviews', label: t('nav.interviews'), icon: Users, description: t('nav.interviews_desc') },
+        { id: 'interview-schedule', path: '/interview-schedule', label: t('nav.interview_schedule'), icon: Calendar, description: t('nav.interview_schedule_desc') },
       ],
     },
     {
       id: 'knowledge',
-      title: '知识库',
+      title: t('nav.group_knowledge'),
       items: [
-        { id: 'kb-manage', path: '/knowledgebase', label: '知识库管理', icon: Database, description: '管理知识文档' },
-        { id: 'chat', path: '/knowledgebase/chat', label: '问答助手', icon: MessageSquare, description: '基于知识库问答' },
+        { id: 'kb-manage', path: '/knowledgebase', label: t('nav.kb_manage'), icon: Database, description: t('nav.kb_manage_desc') },
+        { id: 'chat', path: '/knowledgebase/chat', label: t('nav.chat'), icon: MessageSquare, description: t('nav.chat_desc') },
       ],
     },
     {
       id: 'system',
-      title: '系统',
+      title: t('nav.group_system'),
       items: [
-        { id: 'settings', path: '/settings', label: '设置', icon: Settings, description: '管理模型和语音服务' },
+        { id: 'settings', path: '/settings', label: t('nav.settings'), icon: Settings, description: t('nav.settings_desc') },
       ],
     },
   ];
@@ -130,7 +134,7 @@ export default function Layout() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800">
+    <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-primary-50 dark:from-slate-900 dark:to-slate-800">
       {/* 左侧边栏 */}
       <aside className="w-64 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-700 fixed h-screen left-0 top-0 z-50 flex flex-col">
         {/* Logo */}
@@ -141,13 +145,13 @@ export default function Layout() {
             </div>
             <div>
               <span className="text-lg font-bold text-slate-800 dark:text-white tracking-tight block">AI Interview</span>
-              <span className="text-xs text-slate-400 dark:text-slate-500">智能面试助手</span>
+              <span className="text-xs text-slate-400 dark:text-slate-500">{t('nav.brand_subtitle')}</span>
             </div>
           </Link>
         </div>
 
         {/* 主题切换按钮 */}
-        <div className="px-4 pb-2">
+        <div className="px-4 pb-2 space-y-2">
           <button
             onClick={toggleTheme}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
@@ -155,15 +159,16 @@ export default function Layout() {
             {theme === 'dark' ? (
               <>
                 <Sun className="w-4 h-4" />
-                <span className="text-sm font-medium">浅色模式</span>
+                <span className="text-sm font-medium">{t('nav.light_mode')}</span>
               </>
             ) : (
               <>
                 <Moon className="w-4 h-4" />
-                <span className="text-sm font-medium">深色模式</span>
+                <span className="text-sm font-medium">{t('nav.dark_mode')}</span>
               </>
             )}
           </button>
+          <LanguageSwitcher />
         </div>
 
         {/* 导航菜单 */}
@@ -219,10 +224,29 @@ export default function Layout() {
         </nav>
 
         {/* 底部信息 */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-700">
-          <div className="px-3 py-2 bg-gradient-to-r from-primary-50 to-indigo-50 dark:from-primary-900/30 dark:to-slate-800 rounded-xl">
-            <p className="text-xs text-primary-600 dark:text-primary-400 font-medium">AI 面试助手 v1.0</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Powered by AI</p>
+        <div className="p-4 border-t border-slate-100 dark:border-slate-700 space-y-2">
+          {/* 用户信息 */}
+          <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-primary-50 to-primary-50 dark:from-primary-900/30 dark:to-slate-800 rounded-xl">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-full bg-primary-500 flex items-center justify-center text-white shrink-0">
+                <User className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs text-primary-600 dark:text-primary-400 font-medium truncate">
+                {tokenManager.getUser()?.displayName || tokenManager.getUser()?.username}
+              </span>
+            </div>
+            <button
+              onClick={() => { tokenManager.logout(); window.location.reload(); }}
+              className="text-slate-400 hover:text-red-500 transition-colors shrink-0"
+              title={t('nav.logout_title')}
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="px-3 py-2 bg-gradient-to-r from-primary-50 to-primary-50 dark:from-primary-900/30 dark:to-slate-800 rounded-xl">
+            <p className="text-xs text-primary-600 dark:text-primary-400 font-medium">{t('nav.version')}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{t('nav.powered_by')}</p>
           </div>
         </div>
       </aside>
@@ -248,9 +272,9 @@ export default function Layout() {
         defaultMode={interviewModalPreset?.defaultMode || 'text'}
         defaultResumeId={interviewModalPreset?.defaultResumeId}
         hideModeSwitch={interviewModalPreset?.defaultResumeId == null}
-        title={interviewModalPreset?.title || '开始模拟面试'}
-        subtitle={interviewModalPreset?.subtitle || '选择面试模式和主题，快速开始'}
-        startButtonText={interviewModalPreset?.startButtonText || '开始面试'}
+        title={interviewModalPreset?.title || t('interview.start_interview_title')}
+        subtitle={interviewModalPreset?.subtitle || t('interview.start_interview_subtitle')}
+        startButtonText={interviewModalPreset?.startButtonText || t('interview.start_interview')}
       />
     </div>
   );

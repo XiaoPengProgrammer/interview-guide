@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { tokenManager } from './api/auth';
 import Layout from './components/Layout';
 import { useEffect, useState, Suspense, lazy } from 'react';
 import { historyApi, type InterviewDetail } from './api/history';
@@ -22,6 +23,8 @@ const VoiceInterviewEvaluationPage = lazy(() => import('./pages/VoiceInterviewEv
 const InterviewSchedulePage = lazy(() => import('./pages/InterviewSchedulePage'));
 const InterviewHubPage = lazy(() => import('./pages/InterviewHubPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const InterviewDetailPanel = lazy(() => import('./components/InterviewDetailPanel'));
 
 // Loading component
@@ -163,12 +166,25 @@ function InterviewWrapper() {
   );
 }
 
+/** 登录保护组件：未登录自动跳转到登录页 */
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  if (!tokenManager.isLoggedIn()) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
+
 function App() {
   return (
     <BrowserRouter>
       <Suspense fallback={<Loading />}>
         <Routes>
-          <Route path="/" element={<Layout />}>
+          {/* 登录页和注册页（无保护） */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* 受保护的主应用 */}
+          <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             {/* 默认重定向到简历管理页面 */}
             <Route index element={<Navigate to="/history" replace />} />
 

@@ -31,6 +31,9 @@ public class RagChatSessionEntity {
     /**
      * 会话标题（可自动生成或用户自定义）
      */
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(nullable = false)
     private String title;
 

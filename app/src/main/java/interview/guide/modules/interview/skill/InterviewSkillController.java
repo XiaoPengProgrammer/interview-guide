@@ -39,5 +39,16 @@ public class InterviewSkillController {
         return Result.success(skillService.parseJd(request.jdText()));
     }
 
+    @PostMapping("/analysis/match-resume")
+    @RateLimit(dimension = RateLimit.Dimension.IP, count = 5)
+    public Result<InterviewSkillService.JdResumeMatchResult> matchJdWithResume(
+            @Valid @RequestBody MatchJdResumeRequest request) {
+        return Result.success(skillService.matchJdWithResume(request.jdText(), request.resumeText()));
+    }
+
     public record ParseJdRequest(@NotBlank String jdText) {}
+
+    public record MatchJdResumeRequest(
+            @NotBlank String jdText,
+            @NotBlank String resumeText) {}
 }

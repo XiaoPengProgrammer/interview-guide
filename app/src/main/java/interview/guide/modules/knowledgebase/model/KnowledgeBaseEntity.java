@@ -48,6 +48,10 @@ public class KnowledgeBaseEntity {
     @Column(length = 1000)
     private String storageUrl;
     
+    // 用户ID（关联用户，可空以兼容旧数据）
+    @Column(name = "user_id")
+    private Long userId;
+
     // 上传时间
     @Column(nullable = false)
     private LocalDateTime uploadedAt;
@@ -217,6 +221,14 @@ public class KnowledgeBaseEntity {
 
     public void setChunkCount(Integer chunkCount) {
         this.chunkCount = chunkCount;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }
 

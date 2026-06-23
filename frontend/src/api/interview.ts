@@ -103,4 +103,5 @@ export const interviewApi = {
   async completeInterview(sessionId: string): Promise<void> {
     return request.post<void>(`/api/interview/sessions/${sessionId}/complete`);
   },
+
 };

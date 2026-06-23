@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   X, Sparkles, FileText, Mic,
@@ -51,6 +52,7 @@ export default function UnifiedInterviewModal({
   subtitle = '选择面试模式和主题，快速开始',
   startButtonText = '开始面试',
 }: UnifiedInterviewModalProps) {
+  const { t } = useTranslation();
   const config = useInterviewConfig({ defaultMode, defaultResumeId, autoLoad: false });
 
   useEffect(() => {
@@ -390,7 +392,7 @@ export default function UnifiedInterviewModal({
                       {config.mode === 'text' && (
                         <div>
                           <label className="flex items-center gap-2 mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
-                            题目数量
+                            {t('interview.question_count')}
                           </label>
                           <div className="flex gap-2">
                             {[6, 8, 10, 12].map(n => (
@@ -403,7 +405,7 @@ export default function UnifiedInterviewModal({
                                     : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                                   }`}
                               >
-                                {n} 题
+                                {t('interview.number_questions', { n })}
                               </button>
                             ))}
                           </div>

@@ -626,6 +626,76 @@ public class InterviewSkillService {
         );
     }
 
+    /**
+     * JD-简历匹配结果
+     */
+    public record JdResumeMatchResult(
+        int overallMatchScore,
+        List<SkillMatchItem> skillMatches,
+        String summary
+    ) {}
+
+    /**
+     * 技能匹配条目
+     */
+    public record SkillMatchItem(
+        String skillName,
+        boolean required,
+        int candidateLevel,
+        int matchScore,
+        String gapAnalysis
+    ) {}
+
+    /**
+     * JD-简历匹配
+     */
+    public JdResumeMatchResult matchJdWithResume(String jdText, String resumeText) {
+        if (jdText == null || jdText.length() < MIN_JD_LENGTH) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "JD 内容太少（至少 " + MIN_JD_LENGTH + " 字），请补充后重试");
+        }
+
+        log.info("开始 JD-简历匹配，JD长度: {}, 简历长度: {}", jdText.length(), resumeText.length());
+
+        ChatClient chatClient = llmProviderRegistry.getDefaultChatClient();
+        String systemPrompt;
+        try {
+            systemPrompt = loadClasspathPrompt("classpath:prompts/jd-resume-match-system.st");
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "加载 JD-简历匹配 Prompt 模板失败");
+        }
+
+        BeanOutputConverter<JdResumeMatchResult> outputConverter = new BeanOutputConverter<>(JdResumeMatchResult.class) {};
+        String format = outputConverter.getFormat();
+
+        String userPrompt = PromptSecurityConstants.DATA_BOUNDARY_INSTRUCTION + "\n" +
+            "职位描述：\n" +
+            promptSanitizer.wrapWithDelimiters("jd", promptSanitizer.sanitize(jdText)) +
+            "\n\n候选人简历：\n" +
+            promptSanitizer.wrapWithDelimiters("resume", promptSanitizer.sanitize(resumeText));
+
+        try {
+            JdResumeMatchResult result = structuredOutputInvoker.invoke(
+                chatClient, systemPrompt + "\n\n" + format, userPrompt, outputConverter,
+                ErrorCode.AI_SERVICE_ERROR, "JD-简历匹配失败：", "JD-简历匹配", log
+            );
+
+            if (result == null) {
+                throw new BusinessException(ErrorCode.AI_SERVICE_ERROR, "JD-简历匹配结果为空，请重试");
+            }
+
+            log.info("JD-简历匹配完成: 综合匹配度={}, 技能项={}",
+                result.overallMatchScore(),
+                result.skillMatches() != null ? result.skillMatches().size() : 0);
+
+            return result;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("JD-简历匹配失败: {}", e.getMessage(), e);
+            throw new BusinessException(ErrorCode.AI_SERVICE_ERROR, "JD-简历匹配失败，请重试");
+        }
+    }
+
     public record SkillDTO(String id, String name, String description,
                            List<SkillCategoryDTO> categories,
                            boolean isPreset, String sourceJd, String persona, DisplayDTO display) {}

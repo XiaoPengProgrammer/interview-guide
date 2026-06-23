@@ -4,6 +4,7 @@ import interview.guide.modules.resume.model.ResumeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,4 +22,14 @@ public interface ResumeRepository extends JpaRepository<ResumeEntity, Long> {
      * 检查文件哈希是否存在
      */
     boolean existsByFileHash(String fileHash);
+
+    /**
+     * 获取指定用户的简历列表（按上传时间倒序）
+     */
+    List<ResumeEntity> findByUserIdOrderByUploadedAtDesc(Long userId);
+
+    /**
+     * 获取用户所有简历分析状态
+     */
+    List<ResumeEntity> findByUserId(Long userId);
 }

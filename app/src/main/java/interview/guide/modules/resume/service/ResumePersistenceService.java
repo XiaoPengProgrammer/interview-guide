@@ -1,5 +1,6 @@
 package interview.guide.modules.resume.service;
 
+import interview.guide.common.auth.CurrentUser;
 import interview.guide.common.exception.BusinessException;
 import interview.guide.common.exception.ErrorCode;
 import interview.guide.infrastructure.file.FileHashService;
@@ -78,9 +79,10 @@ public class ResumePersistenceService {
             resume.setStorageKey(storageKey);
             resume.setStorageUrl(storageUrl);
             resume.setResumeText(resumeText);
+            resume.setUserId(CurrentUser.getUserId()); // 关联当前登录用户
             
             ResumeEntity saved = resumeRepository.save(resume);
-            log.info("简历已保存: id={}, hash={}", saved.getId(), fileHash);
+            log.info("简历已保存: id={}, hash={}, userId={}", saved.getId(), fileHash, saved.getUserId());
             
             return saved;
         } catch (Exception e) {
@@ -129,9 +131,14 @@ public class ResumePersistenceService {
     }
     
     /**
-     * 获取所有简历列表
+     * 获取当前用户的简历列表
+     * 未登录时返回所有简历（向后兼容）
      */
     public List<ResumeEntity> findAllResumes() {
+        Long userId = CurrentUser.getUserId();
+        if (userId != null) {
+            return resumeRepository.findByUserIdOrderByUploadedAtDesc(userId);
+        }
         return resumeRepository.findAll();
     }
     

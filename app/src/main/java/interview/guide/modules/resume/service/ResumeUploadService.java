@@ -6,7 +6,6 @@ import interview.guide.common.exception.ErrorCode;
 import interview.guide.common.model.AsyncTaskStatus;
 import interview.guide.infrastructure.file.FileStorageService;
 import interview.guide.infrastructure.file.FileValidationService;
-import interview.guide.modules.interview.model.ResumeAnalysisResponse;
 import interview.guide.modules.resume.listener.AnalyzeStreamProducer;
 import interview.guide.modules.resume.model.ResumeEntity;
 import interview.guide.modules.resume.repository.ResumeRepository;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * 简历上传服务
@@ -59,13 +57,10 @@ public class ResumeUploadService {
         String contentType = parseService.detectContentType(file);
         validateContentType(contentType);
 
-        // 3. 检查简历是否已存在（去重）
-        Optional<ResumeEntity> existingResume = persistenceService.findExistingResume(file);
-        if (existingResume.isPresent()) {
-            log.info("简历上传处理完成（重复）: {} - 耗时: {}ms",
-                fileName, System.currentTimeMillis() - startTime);
-            return handleDuplicateResume(existingResume.get());
-        }
+        // 3. 哈希检测（仅警告不阻断，支持多版本上传）
+        persistenceService.findExistingResume(file).ifPresent(existing ->
+            log.warn("检测到相同内容的简历（hash相同），已创建为新版本: filename={}", existing.getOriginalFilename())
+        );
 
         // 4. 解析简历文本
         long parseStart = System.currentTimeMillis();
@@ -127,40 +122,6 @@ public class ResumeUploadService {
             appConfig.getAllowedTypes(),
             "不支持的文件类型: " + contentType
         );
-    }
-
-    /**
-     * 处理重复简历
-     */
-    private Map<String, Object> handleDuplicateResume(ResumeEntity resume) {
-        log.info("检测到重复简历，返回历史分析结果: resumeId={}", resume.getId());
-
-        // 获取历史分析结果
-        Optional<ResumeAnalysisResponse> analysisOpt = persistenceService.getLatestAnalysisAsDTO(resume.getId());
-
-        // 已有分析结果，直接返回
-        // 没有分析结果（可能之前分析失败），返回当前状态
-        return analysisOpt.map(resumeAnalysisResponse -> Map.of(
-                "analysis", resumeAnalysisResponse,
-                "storage", Map.of(
-                        "fileKey", resume.getStorageKey() != null ? resume.getStorageKey() : "",
-                        "fileUrl", resume.getStorageUrl() != null ? resume.getStorageUrl() : "",
-                        "resumeId", resume.getId()
-                ),
-                "duplicate", true
-        )).orElseGet(() -> Map.of(
-                "resume", Map.of(
-                        "id", resume.getId(),
-                        "filename", resume.getOriginalFilename(),
-                        "analyzeStatus", resume.getAnalyzeStatus() != null ? resume.getAnalyzeStatus().name() : AsyncTaskStatus.PENDING.name()
-                ),
-                "storage", Map.of(
-                        "fileKey", resume.getStorageKey() != null ? resume.getStorageKey() : "",
-                        "fileUrl", resume.getStorageUrl() != null ? resume.getStorageUrl() : "",
-                        "resumeId", resume.getId()
-                ),
-                "duplicate", true
-        ));
     }
 
     /**

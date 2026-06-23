@@ -1,6 +1,7 @@
 package interview.guide.common.exception;
 
 import interview.guide.common.result.Result;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -142,8 +143,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(HttpStatus.OK)
-    public Result<Void> handleHttpRequestMethodNotSupportedException(org.springframework.web.HttpRequestMethodNotSupportedException e) {
-        log.warn("请求方法不支持: {} {}", e.getMethod(), e.getSupportedHttpMethods());
+    public Result<Void> handleHttpRequestMethodNotSupportedException(
+            org.springframework.web.HttpRequestMethodNotSupportedException e,
+            HttpServletRequest request) {
+        log.warn("请求方法不支持: {} {} 路径={}", e.getMethod(), e.getSupportedHttpMethods(), request.getRequestURI());
         return Result.error(ErrorCode.METHOD_NOT_ALLOWED, "请求方法不支持: " + e.getMethod());
     }
 
