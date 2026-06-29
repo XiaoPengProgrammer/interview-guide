@@ -120,7 +120,14 @@ jobs:
       - name: 📦 安装前端依赖
         working-directory: ./frontend
         run: |
-          pnpm install --frozen-lockfile || pnpm install
+          echo "=== 尝试 frozen-lockfile 安装 ==="
+          pnpm install --frozen-lockfile 2>&1 && echo "✅ frozen-lockfile 成功" && exit 0
+          echo "⚠️ Lockfile 过期，使用标准安装模式..."
+          pnpm install
+          echo "=== 检测 lockfile 是否有变更 ==="
+          git diff --name-only | grep "pnpm-lock.yaml" && {
+            echo "ℹ️ pnpm-lock.yaml 已更新，建议本地执行 'pnpm install' 后提交"
+          } || true
 
       - name: 🏗️ 前端类型检查
         working-directory: ./frontend
