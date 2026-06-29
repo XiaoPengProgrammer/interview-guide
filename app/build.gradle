@@ -14,15 +14,13 @@ version = '0.0.1-SNAPSHOT'
 
 repositories {
     // CI友好：全球仓库优先，国内镜像作为fallback（超时3秒快速跳过）
-    mavenCentral() { metadataSources { mavenPom(); artifact() } }
+    mavenCentral()
     maven {
         url 'https://maven.aliyun.com/repository/public/'
-        metadataSources { mavenPom(); artifact() }
     }
     maven { url 'https://repo.spring.io/milestone' }
     maven {
         url 'https://maven.aliyun.com/repository/spring/'
-        metadataSources { mavenPom(); artifact() }
     }
     maven { url 'https://maven.aliyun.com/repository/gradle-plugin/' }
 }
