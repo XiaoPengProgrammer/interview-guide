@@ -341,7 +341,7 @@ function QuestionCard({
                   </svg>
                   你的回答
                 </p>
-                <p className={`leading-relaxed ${
+                <p className={`leading-relaxed whitespace-pre-wrap ${
                   !answer.userAnswer || answer.userAnswer === '不知道' 
                     ? 'text-red-500 font-medium'
                       : 'text-slate-700 dark:text-slate-300'

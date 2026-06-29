@@ -241,7 +241,16 @@ export default function Interview({
     );
   }
 
-  if (!session) return null;
+  if (!session) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="text-center">
+          <div className="w-10 h-10 border-3 border-slate-200 border-t-primary-500 rounded-full mx-auto mb-4 animate-spin" />
+          <p className="text-slate-500 dark:text-slate-400">正在准备面试...</p>
+        </div>
+      </div>
+    );
+  }
   if (!currentQuestion) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">

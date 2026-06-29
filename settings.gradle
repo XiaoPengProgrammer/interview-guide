@@ -7,10 +7,12 @@
 
 pluginManagement {
     repositories {
+        // CI友好：先尝试全球仓库，再从国内镜像回退
+        gradlePluginPortal()
+        mavenCentral()
         maven { url 'https://maven.aliyun.com/repository/public/' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin/' }
         maven { url 'https://maven.aliyun.com/repository/spring-plugin/' }
-        gradlePluginPortal()
     }
 }
 

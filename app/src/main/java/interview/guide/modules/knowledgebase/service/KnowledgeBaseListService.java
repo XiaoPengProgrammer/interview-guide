@@ -198,7 +198,7 @@ public class KnowledgeBaseListService {
         }
         return new KnowledgeBaseStatsDTO(
             knowledgeBaseRepository.countByUserId(userId),
-            ragChatMessageRepository.countByType(MessageType.USER),
+            ragChatMessageRepository.countByTypeAndUserId(MessageType.USER, userId),
             knowledgeBaseRepository.sumAccessCountByUserId(userId),
             knowledgeBaseRepository.countByVectorStatusAndUserId(VectorStatus.COMPLETED, userId),
             knowledgeBaseRepository.countByVectorStatusAndUserId(VectorStatus.PROCESSING, userId)

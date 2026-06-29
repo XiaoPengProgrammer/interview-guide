@@ -35,29 +35,50 @@ services:
       timeout: 3s
       retries: 5
 
-  rustfs:
-    image: rustfs/rustfs:latest
-    container_name: interview-rustfs
-    command: ["/data"]
+  # =========================================
+  # MinIO (S3兼容) 对象存储服务
+  # -----------------------------------------
+  # 用于存储简历、文档等非结构化数据
+  # 浏览器访问 http://localhost:9003 管理文件
+  # =========================================
+  minio:
+    image: minio/minio
+    container_name: interview-minio
+    command: server /data --console-address ":9001"
     environment:
-      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
-      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
-      RUSTFS_CONSOLE_ENABLE: "true"
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "9002:9000"
+      - "9003:9001"
     volumes:
-      - rustfs_data:/data
+      - minio_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "timeout 3 sh -c 'cat < /dev/null > /dev/tcp/localhost/9000' || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 5s
       timeout: 3s
       retries: 5
 
-# 首次启动后，浏览器访问 http://localhost:9001
-# 使用 ${RUSTFS_ACCESS_KEY} / ${RUSTFS_SECRET_KEY} 登录，手动创建名为 interview-guide 的 bucket
+  # MinIO 初始化任务：自动创建 bucket
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb myminio/interview-guide || true;
+      /usr/bin/mc anonymous set public myminio/interview-guide || true;
+      exit 0;
+      "
+
+
+
+# 首次启动后，浏览器访问 http://localhost:9003
+# 使用 minioadmin / minioadmin 登录
 
 volumes:
   postgres_data:
   redis_data:
-  rustfs_data:
+  minio_data:
